@@ -1,5 +1,9 @@
+\ forth test program
+
 : sq dup * ;
 
-: to0 dup 0 > if dup . cr 1 - recurse then ;
+: to0 dup 0 > if dup . 1 - recurse then ;
 
-4 sq to0
+." Hello world!" cr
+4 sq to0 cr
+2 4 swap / . cr

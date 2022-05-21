@@ -42,7 +42,7 @@ int forth_instructionOperands(char ins) {
 }
 
 void forth_run(ForthInstance *forth, ForthProgram p) {
-	int n1, n2;
+	int n1, n2, n3;
 	int pc = 0;
 	char *program = p.instructions;
 	while(pc < p.size)
@@ -138,6 +138,30 @@ void forth_run(ForthInstance *forth, ForthProgram p) {
 			n1 = forth_pop(forth);
 			forth_push(forth, n1 < n2);
 			break;
+		case FORTH_SWAP:
+			n2 = forth_pop(forth);
+			n1 = forth_pop(forth);
+			forth_push(forth, n2);
+			forth_push(forth, n1);
+			break;
+		case FORTH_OVER:
+			n2 = forth_pop(forth);
+			n1 = forth_pop(forth);
+			forth_push(forth, n1);
+			forth_push(forth, n2);
+			forth_push(forth, n1);
+			break;
+		case FORTH_ROT:
+			n3 = forth_pop(forth);
+			n2 = forth_pop(forth);
+			n1 = forth_pop(forth);
+			forth_push(forth, n2);
+			forth_push(forth, n3);
+			forth_push(forth, n1);
+			break;
+		case FORTH_DEPTH:
+			forth_push(forth, forth->sp);
+			break;
 		}
 }
 
@@ -218,6 +242,15 @@ void forth_printProgram(ForthProgram p) {
 			break;
 		case FORTH_LESS:
 			printf("less");
+			break;
+		case FORTH_OVER:
+			printf("over");
+			break;
+		case FORTH_ROT:
+			printf("rot");
+			break;
+		case FORTH_DEPTH:
+			printf("depth");
 			break;
 		}
 		printf("\n");

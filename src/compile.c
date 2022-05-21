@@ -22,6 +22,13 @@ char **forth_splitString(char *text) {
 		if(*c == '\n' || *c == 0) {
 			s[len] = 0;
 			len = 0;
+
+			if(!quote && strcmp(s, "\\") == 0) {
+				quote = 0;
+				comment = false;
+				continue;
+			}
+
 			if(quote || s[0]) {
 				sn++;
 				strings = realloc(strings, sizeof(char*)*sn);
@@ -36,6 +43,9 @@ char **forth_splitString(char *text) {
 				break;
 			continue;
 		}
+
+		if(comment)
+			continue;
 
 		if(quote) {
 			if(*c == quote) {
@@ -62,6 +72,11 @@ char **forth_splitString(char *text) {
 		if(*c == ' ' || *c == '\t') {
 			s[len] = 0;
 			len = 0;
+
+			if(strcmp(s, "\\") == 0) {
+				comment = true;
+				continue;
+			}
 
 			if(s[0]) {
 				if(strcmp(s, ".\"") == 0
@@ -229,7 +244,7 @@ ForthProgram forth_compile(ForthInstance *forth, char *text) {
 			forth_addInstruction(&p, FORTH_DIV);
 		else if(strcmp(s, "*") == 0)
 			forth_addInstruction(&p, FORTH_MUL);
-		else if(strcmp(s, "skip") == 0)
+		else if(strcmp(s, "drop") == 0)
 			forth_addInstruction(&p, FORTH_DROP);
 		else if(strcmp(s, ".") == 0)
 			forth_addInstruction(&p, FORTH_PERIOD);
@@ -251,6 +266,14 @@ ForthProgram forth_compile(ForthInstance *forth, char *text) {
 			forth_addInstruction(&p, FORTH_DEC);
 			forth_addInstruction(&p, FORTH_LESS);
 		}
+		else if(strcmp(s, "swap") == 0)
+			forth_addInstruction(&p, FORTH_SWAP);
+		else if(strcmp(s, "over") == 0)
+			forth_addInstruction(&p, FORTH_OVER);
+		else if(strcmp(s, "rot") == 0)
+			forth_addInstruction(&p, FORTH_ROT);
+		else if(strcmp(s, "depth") == 0)
+			forth_addInstruction(&p, FORTH_DEPTH);
 
 		else {
 			int wd = -1;

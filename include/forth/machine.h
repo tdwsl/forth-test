@@ -26,6 +26,10 @@ enum {
 	FORTH_EQUAL,
 	FORTH_GREATER,
 	FORTH_LESS,
+	FORTH_OVER,
+	FORTH_DEPTH,
+	FORTH_ROT,
+	FORTH_SWAP,
 };
 
 typedef struct forthProgram {
