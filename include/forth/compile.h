@@ -6,5 +6,6 @@
 
 char **forth_splitString(char *text);
 ForthProgram forth_compile(ForthInstance *forth, char *text);
+ForthProgram forth_compileFile(ForthInstance *forth, const char *filename);
 
 #endif

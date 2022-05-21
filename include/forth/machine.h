@@ -2,6 +2,7 @@
 #define FORTH_MACHINE_H
 
 #include "forth/instance.h"
+#include <stdlib.h>
 
 enum {
 	FORTH_PUSH,
@@ -18,6 +19,13 @@ enum {
 	FORTH_RETURN,
 	FORTH_PUTSTR,
 	FORTH_END,
+	FORTH_JZ,
+	FORTH_JNZ,
+	FORTH_INC,
+	FORTH_DEC,
+	FORTH_EQUAL,
+	FORTH_GREATER,
+	FORTH_LESS,
 };
 
 typedef struct forthProgram {
@@ -30,8 +38,11 @@ int forth_chars2int(char *c);
 
 void forth_run(ForthInstance *forth, ForthProgram p);
 void forth_printProgram(ForthProgram p);
+int forth_instructionOperands(char ins);
 
 void forth_addInstruction(ForthProgram *p, char ins);
 void forth_addInteger(ForthProgram *p, int i);
+
+#define forth_freeProgram(P) { if(P.instructions) free(P.instructions); }
 
 #endif

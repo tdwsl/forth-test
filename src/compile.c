@@ -116,6 +116,12 @@ ForthProgram forth_compile(ForthInstance *forth, char *text) {
 	ForthProgram op;
 	bool def = false;
 
+	int if_a[FORTH_RSTACK_SIZE];
+	int else_a[FORTH_RSTACK_SIZE];
+	int if_sp = 0;
+
+	int current;
+
 	for(int j = 0; strings[j]; j++) {
 		char *s = strings[j];
 
@@ -159,6 +165,7 @@ ForthProgram forth_compile(ForthInstance *forth, char *text) {
 			locations = realloc(locations, sizeof(int)
 					* num_identifiers);
 			locations[num_identifiers-1] = p0.size;
+			current = p0.size;
 
 			op = p;
 			def = true;
@@ -173,6 +180,38 @@ ForthProgram forth_compile(ForthInstance *forth, char *text) {
 			p0 = p;
 			p = op;
 			def = false;
+		}
+
+		else if(strcmp(s, "if") == 0) {
+			forth_addInstruction(&p, FORTH_JZ);
+			else_a[if_sp] = -1;
+			if_a[if_sp++] = p.size;
+			forth_addInteger(&p, 0);
+		}
+		else if(strcmp(s, "else") == 0) {
+			forth_addInstruction(&p, FORTH_JUMP);
+			else_a[if_sp-1] = p.size;
+			forth_addInteger(&p, 0);
+		}
+		else if(strcmp(s, "then") == 0) {
+			if_sp--;
+			if(else_a[if_sp] != -1) {
+				forth_int2chars(else_a[if_sp]+4,
+						p.instructions+if_a[if_sp]);
+				forth_int2chars(p.size,
+						p.instructions
+						+else_a[if_sp]);
+			}
+			else
+				forth_int2chars(p.size,
+						p.instructions+if_a[if_sp]);
+		}
+
+		else if(strcmp(s, "recurse") == 0) {
+			if(!def)
+				continue;
+			forth_addInstruction(&p, FORTH_CALL);
+			forth_addInteger(&p, current);
 		}
 
 		else if(strcmp(s, ".\"") == 0) {
@@ -198,6 +237,20 @@ ForthProgram forth_compile(ForthInstance *forth, char *text) {
 			forth_addInstruction(&p, FORTH_CR);
 		else if(strcmp(s, "dup") == 0)
 			forth_addInstruction(&p, FORTH_DUP);
+		else if(strcmp(s, "=") == 0)
+			forth_addInstruction(&p, FORTH_EQUAL);
+		else if(strcmp(s, ">") == 0)
+			forth_addInstruction(&p, FORTH_GREATER);
+		else if(strcmp(s, "<") == 0)
+			forth_addInstruction(&p, FORTH_LESS);
+		else if(strcmp(s, ">=") == 0) {
+			forth_addInstruction(&p, FORTH_INC);
+			forth_addInstruction(&p, FORTH_GREATER);
+		}
+		else if(strcmp(s, "<=") == 0) {
+			forth_addInstruction(&p, FORTH_DEC);
+			forth_addInstruction(&p, FORTH_LESS);
+		}
 
 		else {
 			int wd = -1;
@@ -225,10 +278,55 @@ ForthProgram forth_compile(ForthInstance *forth, char *text) {
 
 	forth_int2chars(p0.size, p0.instructions+1);
 
+	for(int i = 0; i < p.size; i++) {
+		int n;
+		switch(p.instructions[i]) {
+		case FORTH_JUMP:
+		case FORTH_JZ:
+		case FORTH_JNZ:
+			n = forth_chars2int(p.instructions+i+1);
+			n += p0.size;
+			forth_int2chars(n, p.instructions+i+1);
+			break;
+		default:
+			break;
+		}
+		i += forth_instructionOperands(p.instructions[i]);
+	}
+
 	for(int i = 0; i < p.size; i++)
 		forth_addInstruction(&p0, p.instructions[i]);
 
 	free(p.instructions);
 
 	return p0;
+}
+
+ForthProgram forth_compileFile(ForthInstance *forth, const char *filename) {
+	FILE *fp = fopen(filename, "r");
+	if(!fp) {
+		printf("failed to open %s\n", filename);
+		forth_freeInstance(forth);
+		exit(1);
+	}
+
+	const int buf = 20;
+	int max = 300;
+	char *s = malloc(max);
+	int len = 0;
+
+	for(char c = fgetc(fp); c != EOF; c = fgetc(fp)) {
+		s[len++] = c;
+		if(len > max-buf) {
+			max += buf;
+			s = realloc(s, buf);
+		}
+	}
+	fclose(fp);
+	s[len] = 0;
+
+	ForthProgram p = forth_compile(forth, s);
+	free(s);
+
+	return p;
 }

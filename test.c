@@ -27,15 +27,10 @@ int main() {
 
 	ForthInstance *forth = forth_newInstance();
 
-	char *text = ": sq dup * ; 4 sq . cr";
-	printf("%s\n\n", text);
-	ForthProgram p = forth_compile(forth, text);
-
-	forth_printProgram(p);
-	printf("\n");
-
-	//forth_run(forth, (ForthProgram){program, 100});
+	ForthProgram p = forth_compileFile(forth, "test.fth");
+	//forth_printProgram(p);
 	forth_run(forth, p);
+	forth_freeProgram(p);
 
 	forth_freeInstance(forth);
 	return 0;

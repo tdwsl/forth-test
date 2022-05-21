@@ -27,6 +27,20 @@ void forth_addInteger(ForthProgram *p, int i) {
 		forth_addInstruction(p, c[j]);
 }
 
+int forth_instructionOperands(char ins) {
+	switch(ins) {
+	case FORTH_JUMP:
+	case FORTH_JZ:
+	case FORTH_JNZ:
+	case FORTH_PUTSTR:
+	case FORTH_PUSH:
+	case FORTH_CALL:
+		return 4;
+	default:
+		return 0;
+	}
+}
+
 void forth_run(ForthInstance *forth, ForthProgram p) {
 	int n1, n2;
 	int pc = 0;
@@ -89,6 +103,41 @@ void forth_run(ForthInstance *forth, ForthProgram p) {
 			forth_push(forth, n1);
 			pc += 4;
 			break;
+		case FORTH_JNZ:
+			n1 = forth_chars2int(program+pc);
+			pc += 4;
+			if(forth_pop(forth))
+				pc = n1;
+			break;
+		case FORTH_JZ:
+			n1 = forth_chars2int(program+pc);
+			pc += 4;
+			if(!forth_pop(forth))
+				pc = n1;
+			break;
+		case FORTH_DEC:
+			n1 = forth_pop(forth);
+			forth_push(forth, --n1);
+			break;
+		case FORTH_INC:
+			n1 = forth_pop(forth);
+			forth_push(forth, ++n1);
+			break;
+		case FORTH_EQUAL:
+			n2 = forth_pop(forth);
+			n1 = forth_pop(forth);
+			forth_push(forth, n1 == n2);
+			break;
+		case FORTH_GREATER:
+			n2 = forth_pop(forth);
+			n1 = forth_pop(forth);
+			forth_push(forth, n1 > n2);
+			break;
+		case FORTH_LESS:
+			n2 = forth_pop(forth);
+			n1 = forth_pop(forth);
+			forth_push(forth, n1 < n2);
+			break;
 		}
 }
 
@@ -138,11 +187,37 @@ void forth_printProgram(ForthProgram p) {
 			printf("end");
 			break;
 		case FORTH_JUMP:
-			printf("jump #%d", forth_chars2int(p.instructions+pc));
+			printf("jump #%d", forth_chars2int(
+						p.instructions+pc));
+			pc += 4;
+			break;
+		case FORTH_JNZ:
+			printf("jnz #%d", forth_chars2int(
+						p.instructions+pc));
+			pc += 4;
+			break;
+		case FORTH_JZ:
+			printf("jz #%d", forth_chars2int(
+						p.instructions+pc));
 			pc += 4;
 			break;
 		case FORTH_DUP:
 			printf("dup");
+			break;
+		case FORTH_DEC:
+			printf("dec");
+			break;
+		case FORTH_INC:
+			printf("inc");
+			break;
+		case FORTH_EQUAL:
+			printf("equal");
+			break;
+		case FORTH_GREATER:
+			printf("greater");
+			break;
+		case FORTH_LESS:
+			printf("less");
 			break;
 		}
 		printf("\n");
