@@ -274,6 +274,8 @@ ForthProgram forth_compile(ForthInstance *forth, char *text) {
 			forth_addInstruction(&p, FORTH_ROT);
 		else if(strcmp(s, "depth") == 0)
 			forth_addInstruction(&p, FORTH_DEPTH);
+		else if(strcmp(s, "bye") == 0)
+			forth_addInstruction(&p, FORTH_END);
 
 		else {
 			int wd = -1;
