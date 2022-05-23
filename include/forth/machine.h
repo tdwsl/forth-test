@@ -30,6 +30,9 @@ enum {
 	FORTH_DEPTH,
 	FORTH_ROT,
 	FORTH_SWAP,
+	FORTH_ITER,
+	FORTH_DO,
+	FORTH_LOOP,
 };
 
 typedef struct forthProgram {

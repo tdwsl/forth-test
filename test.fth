@@ -8,4 +8,7 @@
 4 sq to0 cr
 2 4 swap / . cr
 
-0 if bye else 0 . cr then
+: 1to10 11 1 do i . loop cr ;
+1to10
+
+bye

@@ -35,6 +35,7 @@ int forth_instructionOperands(char ins) {
 	case FORTH_PUTSTR:
 	case FORTH_PUSH:
 	case FORTH_CALL:
+	case FORTH_LOOP:
 		return 4;
 	default:
 		return 0;
@@ -162,6 +163,27 @@ void forth_run(ForthInstance *forth, ForthProgram p) {
 		case FORTH_DEPTH:
 			forth_push(forth, forth->sp);
 			break;
+		case FORTH_DO:
+			n2 = forth_pop(forth);
+			n1 = forth_pop(forth);
+			forth->lstack[forth->lsp++] = n1;
+			forth->lstack[forth->lsp++] = n2;
+			break;
+		case FORTH_ITER:
+			forth_push(forth, forth->lstack[forth->lsp-1]);
+			break;
+		case FORTH_LOOP:
+			n1 = forth->lstack[forth->lsp-1];
+			n2 = forth->lstack[forth->lsp-2];
+			n1++;
+			forth->lstack[forth->lsp-1] = n1;
+			if(n1 < n2)
+				pc = forth_chars2int(program+pc);
+			else {
+				forth->lsp -= 2;
+				pc += 4;
+			}
+			break;
 		}
 }
 
@@ -251,6 +273,16 @@ void forth_printProgram(ForthProgram p) {
 			break;
 		case FORTH_DEPTH:
 			printf("depth");
+			break;
+		case FORTH_DO:
+			printf("do");
+			break;
+		case FORTH_ITER:
+			printf("iter");
+			break;
+		case FORTH_LOOP:
+			printf("loop #%d", forth_chars2int(
+						p.instructions+pc));
 			break;
 		}
 		printf("\n");

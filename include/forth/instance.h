@@ -3,11 +3,13 @@
 
 #define FORTH_STACK_SIZE 512
 #define FORTH_RSTACK_SIZE 256
+#define FORTH_LSTACK_SIZE 32
 
 typedef struct forthInstance {
 	int stack[FORTH_STACK_SIZE];
 	int rstack[FORTH_RSTACK_SIZE];
-	int sp, rsp;
+	int lstack[FORTH_LSTACK_SIZE];
+	int sp, rsp, lsp;
 	int *addresses;
 	char **strings;
 } ForthInstance;

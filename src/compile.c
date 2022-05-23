@@ -135,6 +135,9 @@ ForthProgram forth_compile(ForthInstance *forth, char *text) {
 	int else_a[FORTH_RSTACK_SIZE];
 	int if_sp = 0;
 
+	int do_a[FORTH_LSTACK_SIZE];
+	int do_sp = 0;
+
 	int current;
 
 	for(int j = 0; strings[j]; j++) {
@@ -221,6 +224,19 @@ ForthProgram forth_compile(ForthInstance *forth, char *text) {
 				forth_int2chars(p.size,
 						p.instructions+if_a[if_sp]);
 		}
+
+		else if(strcmp(s, "do") == 0) {
+			forth_addInstruction(&p, FORTH_DO);
+			do_a[do_sp++] = p.size;
+		}
+		else if(strcmp(s, "loop") == 0) {
+			do_sp--;
+			forth_addInstruction(&p, FORTH_LOOP);
+			forth_addInteger(&p, do_a[do_sp]);
+		}
+
+		else if(strcmp(s, "i") == 0)
+			forth_addInstruction(&p, FORTH_ITER);
 
 		else if(strcmp(s, "recurse") == 0) {
 			if(!def)

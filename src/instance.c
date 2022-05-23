@@ -10,6 +10,7 @@ ForthInstance *forth_newInstance() {
 
 	forth->sp = 0;
 	forth->rsp = 0;
+	forth->lsp = 0;
 
 	forth->strings = malloc(sizeof(char*));
 	forth->strings[0] = 0;
